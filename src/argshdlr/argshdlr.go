@@ -1,29 +1,38 @@
 package argshdlr
 
 import (
-	"flag"
+	"bufio"
 	"fmt"
+	"os"
+	"strings"
 )
 
-var create = flag.Bool("create", false, "Type whether you want to create a new TODO task")
-var parent = flag.String("parent", "", "Type new task's parent name")
-
 type Args struct {
-	create *bool
-	parent *string
+	create bool
+	parent string
 }
-func (a Args) new() Args {
-	args := new(Args)
-	args.create = create
-	args.parent = parent
-	return *args
+func (a Args) new(args map[string]string) Args {
+	return Args{
+		create: args["create"] != "",
+		parent: args["parent"],
+	}
 }
 func (a Args) String() string {
-	return fmt.Sprintf("%v, %v", *a.create, *a.parent)
+	return fmt.Sprintf("%v, %v", a.create, a.parent)
 }
 
 func Handle(callback func(Args)) {
-	flag.Parse()
-	callback(Args{}.new())
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		lineArgs := strings.Split(scanner.Text(), " ")
+		if len(lineArgs) < 2 {
+			continue
+		}
+		args := make(map[string]string)
+		for i := 0; i < len(lineArgs); i += 2 {
+			args[lineArgs[i]] = lineArgs[i+1]
+		}
+		callback(Args{}.new(args))
+	}
 }
 
