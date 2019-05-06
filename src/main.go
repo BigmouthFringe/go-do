@@ -1,12 +1,14 @@
 package main
 
 import (
-	"./argshdlr"
-	"fmt"
+	"./inphdlr"
+	"./taskcmd"
+	"./taskdmn"
 )
 
 func main() {
-	argshdlr.Handle(func (result argshdlr.Args) {
-		fmt.Println(result)
+	root := taskdmn.NewTask("All tasks:", true)
+	inphdlr.Handle(func (args *inphdlr.Args) {
+		taskcmd.Execute(root, args)
 	})
 }
