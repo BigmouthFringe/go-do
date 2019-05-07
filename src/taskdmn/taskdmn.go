@@ -8,12 +8,15 @@ import (
 
 const (
 	newLine    = "\n"
-	backspace  = "\u0008"
 	tab        = "\t"
-	horItem    = "─── "
 	vertItem   = "│   "
 	middleItem = "├── "
 	lastItem   = "└── "
+
+	unsupported = "unsupported operation"
+	outOfRange  = "index out of slice bounds"
+	nilSlice    = "tasks slice is nil"
+	noTaskFound = "no task was found"
 )
 
 type Task interface {
@@ -31,84 +34,78 @@ func NewTask(name string, composite bool) Task {
 		name = defaultName()
 	}
 	if composite {
-		task := new(CompositeTask)
+		task := new(compositeTask)
 		task.name = name
 		task.tasks = make([]Task, 0)
 		return task
 	} else {
-		task := new(SimpleTask)
+		task := new(simpleTask)
 		task.name = name
 		return task
 	}
 }
 
-type SimpleTask struct {
+type simpleTask struct {
 	name string
 }
 
-func (t *SimpleTask) Name() string {
+func (t *simpleTask) Name() string {
 	return t.name
 }
-func (t *SimpleTask) SetName(name string) {
+func (t *simpleTask) SetName(name string) {
 	if nullOrWhitespace(name) {
 		name = defaultName()
 	}
 	t.name = name
 }
 
-func (t *SimpleTask) AddTask(task Task) error {
-	return errors.New("unsupported operation")
+func (t *simpleTask) AddTask(Task) error {
+	return errors.New(unsupported)
 }
-func (t *SimpleTask) RemoveTask(index int) error {
-	return errors.New("unsupported operation")
+func (t *simpleTask) RemoveTask(int) error {
+	return errors.New(unsupported)
 }
-func (t *SimpleTask) Tasks() ([]Task, error) {
-	return nil, errors.New("unsupported operation")
+func (t *simpleTask) Tasks() ([]Task, error) {
+	return nil, errors.New(unsupported)
 }
-func (t *SimpleTask) Find(string) (Task, error) {
-	return nil, errors.New("unsupported operation")
+func (t *simpleTask) Find(string) (Task, error) {
+	return nil, errors.New(unsupported)
 }
 
-func (t *SimpleTask) String() string {
+func (t *simpleTask) String() string {
 	return t.name
 }
 
-type CompositeTask struct {
-	name string
+type compositeTask struct {
+	name  string
 	tasks []Task
 }
 
-func (t *CompositeTask) Name() string {
+func (t *compositeTask) Name() string {
 	return t.name
 }
-func (t *CompositeTask) SetName(name string) {
+func (t *compositeTask) SetName(name string) {
 	if nullOrWhitespace(name) {
 		name = defaultName()
 	}
 	t.name = name
 }
 
-func (t *CompositeTask) AddTask(task Task) error {
-	if t.tasks == nil {
-		return errors.New("tasks slice is nil")
-	}
+func (t *compositeTask) AddTask(task Task) error {
 	t.tasks = append(t.tasks, task)
 	return nil
 }
-func (t *CompositeTask) RemoveTask(index int) error {
-	if t.tasks == nil {
-		return errors.New("tasks slice is nil")
-	}
-	if len(t.tasks) - 1 < index {
-		return errors.New("index out of slice bounds")
+func (t *compositeTask) RemoveTask(index int) error {
+	if len(t.tasks)-1 < index {
+		return errors.New(outOfRange)
 	}
 	t.tasks = removeTask(t.tasks, index)
 	return nil
 }
-func (t *CompositeTask) Tasks() ([]Task, error) {
+func (t *compositeTask) Tasks() ([]Task, error) {
 	return t.tasks, nil
 }
-func (t *CompositeTask) Find(name string) (Task, error) {
+func (t *compositeTask) Find(name string) (Task, error) {
 	for _, task := range t.tasks {
 		if task.Name() == name {
 			return task, nil
@@ -118,19 +115,19 @@ func (t *CompositeTask) Find(name string) (Task, error) {
 			return found, nil
 		}
 	}
-	return nil, errors.New("no such task was found")
+	return nil, errors.New(noTaskFound)
 }
 
-func (t *CompositeTask) String() string {
+func (t *compositeTask) String() string {
 	sb := new(strings.Builder)
 	sb.WriteString(t.name)
 	if len(t.tasks) > 0 {
 		sb.WriteString(newLine)
 		for i, task := range t.tasks {
 			str := applyOffset(fmt.Sprint(task))
-			if i == len(t.tasks) - 1 {
+			if i == len(t.tasks)-1 {
 				sb.WriteString(lastItem + str)
-			 	break
+				break
 			}
 			sb.WriteString(middleItem + str + newLine)
 		}
@@ -146,8 +143,8 @@ func defaultName() string {
 }
 
 func applyOffset(s string) string {
-	s = strings.Replace(s, middleItem, vertItem + middleItem, -1)
-	s = strings.Replace(s, lastItem, tab + lastItem, -1)
+	s = strings.Replace(s, middleItem, vertItem+middleItem, -1)
+	s = strings.Replace(s, lastItem, tab+lastItem, -1)
 	return s
 }
 func removeTask(a []Task, i int) []Task {
