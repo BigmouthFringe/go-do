@@ -7,16 +7,18 @@ import (
 )
 
 const (
-	newLine    = "\n"
-	tab        = "\t"
+	dftTaskName = "New task"
+
+	newLine    = "\r\n"
+	indent     = "    "
 	vertItem   = "│   "
 	middleItem = "├── "
 	lastItem   = "└── "
 
 	unsupported = "unsupported operation"
 	outOfRange  = "index out of slice bounds"
-	nilSlice    = "tasks slice is nil"
 	noTaskFound = "no task was found"
+	invalidArg  = "invalid argument"
 )
 
 type Task interface {
@@ -31,7 +33,7 @@ type Task interface {
 
 func NewTask(name string, composite bool) Task {
 	if nullOrWhitespace(name) {
-		name = defaultName()
+		name = dftTaskName
 	}
 	if composite {
 		task := new(compositeTask)
@@ -54,7 +56,7 @@ func (t *simpleTask) Name() string {
 }
 func (t *simpleTask) SetName(name string) {
 	if nullOrWhitespace(name) {
-		name = defaultName()
+		name = dftTaskName
 	}
 	t.name = name
 }
@@ -86,12 +88,15 @@ func (t *compositeTask) Name() string {
 }
 func (t *compositeTask) SetName(name string) {
 	if nullOrWhitespace(name) {
-		name = defaultName()
+		name = dftTaskName
 	}
 	t.name = name
 }
 
 func (t *compositeTask) AddTask(task Task) error {
+	if task == nil {
+		return errors.New(invalidArg)
+	}
 	t.tasks = append(t.tasks, task)
 	return nil
 }
@@ -106,6 +111,9 @@ func (t *compositeTask) Tasks() ([]Task, error) {
 	return t.tasks, nil
 }
 func (t *compositeTask) Find(name string) (Task, error) {
+	if nullOrWhitespace(name) {
+		return nil, errors.New(invalidArg)
+	}
 	for _, task := range t.tasks {
 		if task.Name() == name {
 			return task, nil
@@ -115,7 +123,7 @@ func (t *compositeTask) Find(name string) (Task, error) {
 			return found, nil
 		}
 	}
-	return nil, errors.New(noTaskFound)
+	return nil, nil
 }
 
 func (t *compositeTask) String() string {
@@ -138,13 +146,9 @@ func (t *compositeTask) String() string {
 func nullOrWhitespace(s string) bool {
 	return s == "" || s == " "
 }
-func defaultName() string {
-	return "New task"
-}
-
 func applyOffset(s string) string {
 	s = strings.Replace(s, middleItem, vertItem+middleItem, -1)
-	s = strings.Replace(s, lastItem, tab+lastItem, -1)
+	s = strings.Replace(s, lastItem, indent+lastItem, -1)
 	return s
 }
 func removeTask(a []Task, i int) []Task {

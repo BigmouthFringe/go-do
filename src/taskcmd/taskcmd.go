@@ -4,10 +4,11 @@ import (
 	"../inphdlr"
 	"../taskdmn"
 	"fmt"
+	"os"
+	"os/user"
 )
 
 func Execute(task taskdmn.Task, args *inphdlr.Args) {
-	// NOTE: This is exceptional case, because there's always need to be a root task
 	if task == nil {
 		panic("nil root task")
 	}
@@ -19,6 +20,9 @@ func Execute(task taskdmn.Task, args *inphdlr.Args) {
 	}
 	if args.List == true {
 		fmt.Println(task)
+	}
+	if args.Export != "" {
+		export(task, args.Export)
 	}
 }
 
@@ -51,6 +55,24 @@ func remove(task taskdmn.Task, args *inphdlr.Args) {
 			fmt.Println(err)
 		}
 	}
+}
+
+func export(task taskdmn.Task, dirName string) {
+	user, error := user.Current()
+	if error != nil {
+		fmt.Println(error.Error())
+		return
+	}
+	homedir := user.HomeDir
+	desktop := homedir + "/Desktop/"
+
+	f, error := os.Create(desktop + dirName + ".txt")
+	defer f.Close()
+	if error != nil {
+		fmt.Println(error.Error())
+		return
+	}
+	f.WriteString(fmt.Sprint(task))
 }
 
 func find(task taskdmn.Task, name string) taskdmn.Task {

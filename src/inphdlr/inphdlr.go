@@ -14,14 +14,20 @@ import (
 // composite - defines whether task will be composite
 // parent - task, on which operations will be performed
 type Args struct {
-	Add    string
-	Remove int
-	List   bool
+	Add       string
+	Remove    int
+	List      bool
 	Composite bool
-	Parent string
+	Parent    string
+	Export    string
 }
+
 func newArgs(inpArgs map[string]string) *Args {
 	a := new(Args)
+	a.mapArgs(inpArgs)
+	return a
+}
+func (a *Args) mapArgs(inpArgs map[string]string) *Args {
 	a.Add = inpArgs["add"]
 	if pos, err := strconv.Atoi(inpArgs["remove"]); err == nil {
 		a.Remove = pos
@@ -29,14 +35,15 @@ func newArgs(inpArgs map[string]string) *Args {
 	a.List = inpArgs["list"] != ""
 	a.Composite = inpArgs["composite"] != ""
 	a.Parent = inpArgs["parent"]
+	a.Export = inpArgs["export"]
 	return a
 }
 
-func Handle(callback func (*Args)) {
+func Handle(callback func(*Args)) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		inpParams := strings.Split(scanner.Text(), " ")
-		if len(inpParams) % 2 != 0 {
+		if len(inpParams)%2 != 0 {
 			fmt.Println("invalid parameters")
 			continue
 		}
@@ -47,4 +54,3 @@ func Handle(callback func (*Args)) {
 		callback(newArgs(inpArgs))
 	}
 }
-

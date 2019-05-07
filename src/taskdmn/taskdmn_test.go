@@ -2,12 +2,6 @@ package taskdmn
 
 import "testing"
 
-func TestNewTask(t *testing.T) {
-	t.Run("sn", TestNewTask_SetName)
-	t.Run("dn", TestNewTask_DefaultName)
-	t.Run("ct", TestNewTask_CompositeTask)
-	t.Run("st", TestNewTask_SimpleTask)
-}
 func TestNewTask_SetName(t *testing.T) {
 	name := "sample"
 	if task := NewTask(name, false); task.Name() != name {
@@ -15,10 +9,10 @@ func TestNewTask_SetName(t *testing.T) {
 	}
 }
 func TestNewTask_DefaultName(t *testing.T) {
-	if task := NewTask("", false); task.Name() != defaultName() {
+	if task := NewTask("", false); task.Name() != dftTaskName {
 		t.Fail()
 	}
-	if task := NewTask(" ", false); task.Name() != defaultName() {
+	if task := NewTask(" ", false); task.Name() != dftTaskName {
 		t.Fail()
 	}
 }
@@ -103,6 +97,12 @@ func TestCompositeTask_AddTask(t *testing.T) {
 		t.Fail()
 	}
 }
+func TestCompositeTask_AddTask_InvalidArg(t *testing.T) {
+	task := NewTask("", true)
+	if err := task.AddTask(nil); err.Error() != invalidArg {
+		t.Fail()
+	}
+}
 func TestCompositeTask_RemoveTask(t *testing.T) {
 	task := NewTask("", true)
 	subtask := NewTask("sample", false)
@@ -139,20 +139,27 @@ func TestCompositeTask_Tasks(t *testing.T) {
 }
 func TestCompositeTask_Find(t *testing.T) {
 	task := NewTask("", true)
-	if _, err := task.Find(""); err.Error() != noTaskFound {
+	if found, _ := task.Find("xyz"); found != nil {
 		t.Fail()
 	}
 	subtask1 := NewTask("sample", true)
 	task.AddTask(subtask1)
-	if _, err := task.Find("xyz"); err.Error() != noTaskFound {
+	if found, _ := task.Find("xyz"); found != nil {
 		t.Fail()
 	}
+
 	if found, err := task.Find(subtask1.Name()); found == nil || err != nil {
 		t.Fail()
 	}
 	subtask2 := NewTask("xyz", false)
 	subtask1.AddTask(subtask2)
 	if found, err := task.Find(subtask2.Name()); found == nil || err != nil {
+		t.Fail()
+	}
+}
+func TestCompositeTask_Find_InvalidArg(t *testing.T) {
+	task := NewTask("", true)
+	if _, err := task.Find(""); err.Error() != invalidArg {
 		t.Fail()
 	}
 }
