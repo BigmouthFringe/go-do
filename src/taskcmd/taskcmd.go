@@ -18,8 +18,8 @@ func Execute(task taskdmn.Task, args *inphdlr.Args) {
 	if args.Remove != 0 {
 		remove(task, args)
 	}
-	if args.List == true {
-		fmt.Println(task)
+	if args.List() != "" {
+		list(task, args)
 	}
 	if args.Export != "" {
 		export(task, args.Export)
@@ -32,11 +32,11 @@ func add(task taskdmn.Task, args *inphdlr.Args) {
 		if parent == nil {
 			return
 		}
-		if err := parent.AddTask(taskdmn.NewTask(args.Add, args.Composite)); err != nil {
+		if err := parent.AddTask(taskdmn.NewTask(args.Add, args.Composite())); err != nil {
 			fmt.Println(err)
 		}
 	} else {
-		if err := task.AddTask(taskdmn.NewTask(args.Add, args.Composite)); err != nil {
+		if err := task.AddTask(taskdmn.NewTask(args.Add, args.Composite())); err != nil {
 			fmt.Println(err)
 		}
 	}
@@ -56,7 +56,19 @@ func remove(task taskdmn.Task, args *inphdlr.Args) {
 		}
 	}
 }
-
+func list(task taskdmn.Task, args *inphdlr.Args) {
+	if args.List() == inphdlr.ListAllArg {
+		fmt.Println(task)
+		return
+	}
+	found := find(task, args.List())
+	if found != nil {
+		fmt.Println(found)
+	} else {
+		fmt.Println("task was not found")
+		fmt.Println(task)
+	}
+}
 func export(task taskdmn.Task, dirName string) {
 	user, error := user.Current()
 	if error != nil {
