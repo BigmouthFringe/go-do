@@ -1,11 +1,11 @@
 package taskcmd
 
 import (
-	"../inphdlr"
-	"../taskdmn"
 	"fmt"
+	"inphdlr"
 	"os"
 	"os/user"
+	"taskdmn"
 )
 
 func Execute(task taskdmn.Task, args *inphdlr.Args) {
