@@ -14,11 +14,12 @@ const (
 	vertItem   = "│   "
 	middleItem = "├── "
 	lastItem   = "└── "
+)
 
-	unsupported = "unsupported operation"
-	outOfRange  = "index out of slice bounds"
-	noTaskFound = "no task was found"
-	invalidArg  = "invalid argument"
+var (
+	ErrUnsupported = errors.New("unsupported operation")
+	ErrOutOfRange  = errors.New("index out of range")
+	ErrInvalidArgs = errors.New("invalid argument")
 )
 
 type Task interface {
@@ -62,16 +63,16 @@ func (t *simpleTask) SetName(name string) {
 }
 
 func (t *simpleTask) AddTask(Task) error {
-	return errors.New(unsupported)
+	return ErrUnsupported
 }
 func (t *simpleTask) RemoveTask(int) error {
-	return errors.New(unsupported)
+	return ErrUnsupported
 }
 func (t *simpleTask) Tasks() ([]Task, error) {
-	return nil, errors.New(unsupported)
+	return nil, ErrUnsupported
 }
 func (t *simpleTask) Find(string) (Task, error) {
-	return nil, errors.New(unsupported)
+	return nil, ErrUnsupported
 }
 
 func (t *simpleTask) String() string {
@@ -95,14 +96,14 @@ func (t *compositeTask) SetName(name string) {
 
 func (t *compositeTask) AddTask(task Task) error {
 	if task == nil {
-		return errors.New(invalidArg)
+		return ErrInvalidArgs
 	}
 	t.tasks = append(t.tasks, task)
 	return nil
 }
 func (t *compositeTask) RemoveTask(index int) error {
 	if len(t.tasks)-1 < index {
-		return errors.New(outOfRange)
+		return ErrOutOfRange
 	}
 	t.tasks = removeTask(t.tasks, index)
 	return nil
@@ -112,7 +113,7 @@ func (t *compositeTask) Tasks() ([]Task, error) {
 }
 func (t *compositeTask) Find(name string) (Task, error) {
 	if nullOrWhitespace(name) {
-		return nil, errors.New(invalidArg)
+		return nil, ErrInvalidArgs
 	}
 	for _, task := range t.tasks {
 		if task.Name() == name {

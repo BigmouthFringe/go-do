@@ -47,25 +47,25 @@ func TestSimpleTask_SetName(t *testing.T) {
 
 func TestSimpleTask_AddTask_InvalidOperation(t *testing.T) {
 	task := NewTask("", false)
-	if err := task.AddTask(task); err.Error() != unsupported {
+	if err := task.AddTask(task); err != ErrUnsupported {
 		t.Fail()
 	}
 }
 func TestSimpleTask_RemoveTask_InvalidOperation(t *testing.T) {
 	task := NewTask("", false)
-	if err := task.RemoveTask(0); err.Error() != unsupported {
+	if err := task.RemoveTask(0); err != ErrUnsupported {
 		t.Fail()
 	}
 }
 func TestSimpleTask_Tasks_InvalidOperation(t *testing.T) {
 	task := NewTask("", false)
-	if _, err := task.Tasks(); err.Error() != unsupported {
+	if _, err := task.Tasks(); err != ErrUnsupported {
 		t.Fail()
 	}
 }
 func TestSimpleTask_Find_InvalidOperation(t *testing.T) {
 	task := NewTask("", false)
-	if _, err := task.Find(""); err.Error() != unsupported {
+	if _, err := task.Find(""); err != ErrUnsupported {
 		t.Fail()
 	}
 }
@@ -99,7 +99,7 @@ func TestCompositeTask_AddTask(t *testing.T) {
 }
 func TestCompositeTask_AddTask_InvalidArg(t *testing.T) {
 	task := NewTask("", true)
-	if err := task.AddTask(nil); err.Error() != invalidArg {
+	if err := task.AddTask(nil); err != ErrInvalidArgs {
 		t.Fail()
 	}
 }
@@ -116,11 +116,11 @@ func TestCompositeTask_RemoveTask(t *testing.T) {
 }
 func TestCompositeTask_RemoveTask_IndexOutOfRange(t *testing.T) {
 	task := NewTask("", true)
-	if err := task.RemoveTask(42); err.Error() != outOfRange {
+	if err := task.RemoveTask(42); err != ErrOutOfRange {
 		t.Fail()
 	}
 	task.AddTask(NewTask("sample", false))
-	if err := task.RemoveTask(42); err.Error() != outOfRange {
+	if err := task.RemoveTask(42); err != ErrOutOfRange {
 		t.Fail()
 	}
 }
@@ -159,7 +159,7 @@ func TestCompositeTask_Find(t *testing.T) {
 }
 func TestCompositeTask_Find_InvalidArg(t *testing.T) {
 	task := NewTask("", true)
-	if _, err := task.Find(""); err.Error() != invalidArg {
+	if _, err := task.Find(""); err != ErrInvalidArgs {
 		t.Fail()
 	}
 }
