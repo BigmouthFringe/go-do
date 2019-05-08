@@ -75,7 +75,7 @@ func (t *simpleTask) Find(string) (Task, error) {
 }
 
 func (t *simpleTask) String() string {
-	return t.name
+	return "[" + t.name + "]"
 }
 
 type compositeTask struct {
@@ -132,24 +132,23 @@ func (t *compositeTask) String() string {
 	if len(t.tasks) > 0 {
 		sb.WriteString(newLine)
 		for i, task := range t.tasks {
-			str := applyOffset(fmt.Sprint(task))
 			if i == len(t.tasks)-1 {
+				str := applyOffset(fmt.Sprint(task), indent)
 				sb.WriteString(lastItem + str)
-				break
+			} else {
+				str := applyOffset(fmt.Sprint(task), vertItem)
+				sb.WriteString(middleItem + str + newLine)
 			}
-			sb.WriteString(middleItem + str + newLine)
 		}
 	}
 	return sb.String()
 }
+func applyOffset(s string, offset string) string {
+	return strings.Replace(s, newLine, newLine+offset, -1)
+}
 
 func nullOrWhitespace(s string) bool {
 	return s == "" || s == " "
-}
-func applyOffset(s string) string {
-	s = strings.Replace(s, middleItem, vertItem+middleItem, -1)
-	s = strings.Replace(s, lastItem, indent+lastItem, -1)
-	return s
 }
 func removeTask(a []Task, i int) []Task {
 	return append(a[:i], a[i+1:]...)
